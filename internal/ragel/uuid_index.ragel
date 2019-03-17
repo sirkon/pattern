@@ -1,0 +1,26 @@
+package ragel
+
+
+
+
+%% machine uuid_index;
+%% write data;
+
+
+
+func (r *Stuff) UUIDIndex(data []byte) int {
+	cs, p, pe := 0, 0, len(data)
+    var pos int
+
+    %%{
+        action returnRes    { return pos }
+        action anchor       { pos = p - 1}
+
+	    main := any* any@anchor any any any any any any any "-" any any any any "-" any any any any "-" any any any any "-" any any any any any any any any @ returnRes;
+
+	    write init;
+	    write exec;
+	}%%
+
+	return -1
+}

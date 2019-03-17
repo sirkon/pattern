@@ -137,6 +137,9 @@ func TestPattern_Lookup(t *testing.T) {
 			if !reflect.DeepEqual(got, want) {
 				t.Errorf("Pattern.Lookup() = %v, want %v", string(got), tt.want)
 			}
+			if !reflect.DeepEqual(got, p.ShortLookup([]byte(tt.source))) {
+				t.Errorf("Different result caught for Lookup and ShortLookup")
+			}
 		})
 	}
 }
@@ -148,6 +151,9 @@ func TestPattern_Lookup2(t *testing.T) {
 		t.Errorf("Must be nil result here")
 	}
 	if p.Lookup([]byte("                      ")) == nil {
+		t.Errorf("Must not be nil here")
+	}
+	if p.ShortLookup([]byte("                      ")) == nil {
 		t.Errorf("Must not be nil here")
 	}
 	if p.String() != patternText {
@@ -193,6 +199,8 @@ func TestRagelCheck(t *testing.T) {
 var macAddrs [][]byte
 var aaSampes [][]byte
 var offsetAddrs [][]byte
+var uuids [][]byte
+var offsetUUIDs [][]byte
 
 func init() {
 	for i := 0; i < 16; i++ {
@@ -212,10 +220,23 @@ func init() {
 		for j := range opts {
 			opts[j] = i
 		}
-		for k := 0; k < 16; k++ {
+		for k := 0; k < 128; k++ {
 			offsetAddrs = append(offsetAddrs, []byte(
 				strings.Repeat(" ", k)+fmt.Sprintf("%x%x:%x%x:%x%x:%x%x:%x%x:%x%x", opts...),
 			))
+		}
+	}
+
+	uuidSample := "00000000-0000-0000-0000-000000000000"
+	for i := 0; i < 16; i++ {
+		uuid := strings.ReplaceAll(uuidSample, "0", fmt.Sprintf("%x", i))
+		uuids = append(uuids, []byte(uuid))
+	}
+
+	for i := 0; i < 16; i++ {
+		uuid := strings.ReplaceAll(uuidSample, "0", fmt.Sprintf("%x", i))
+		for k := 0; k < 8; k++ {
+			offsetUUIDs = append(offsetUUIDs, []byte(strings.Repeat(" ", k)+uuid))
 		}
 	}
 }
@@ -253,6 +274,39 @@ func BenchmarkRagel_Match(b *testing.B) {
 	}
 }
 
+func BenchmarkPattern_UUIDMatch(b *testing.B) {
+	ptrn, _ := pattern.NewPattern("........-....-....-....-............")
+	for i := 0; i < b.N; i++ {
+		for _, uuid := range uuids {
+			if !ptrn.Match(uuid) {
+				b.Fatalf("the pattern %s must gives true when matched against %s", ptrn, string(uuid))
+			}
+		}
+	}
+}
+
+func BenchmarkRegexp_UUIDMatch(b *testing.B) {
+	ptrn := regexp.MustCompile("^........-....-....-....-............$")
+	for i := 0; i < b.N; i++ {
+		for _, uuid := range uuids {
+			if !ptrn.Match(uuid) {
+				b.Fatalf("the pattern %s must gives true when matched against %s", ptrn, string(uuid))
+			}
+		}
+	}
+}
+
+func BenchmarkRagel_UUIDMatch(b *testing.B) {
+	var ptrn ragel.Stuff
+	for i := 0; i < b.N; i++ {
+		for _, uuid := range uuids {
+			if !ptrn.UUIDMatch(uuid) {
+				b.Fatalf("the pattern %s must give true when matched against %s", ptrn, string(uuid))
+			}
+		}
+	}
+}
+
 func BenchmarkPattern_Lookup(b *testing.B) {
 	ptrn, _ := pattern.NewPattern("..:..:..:..:..:..")
 	for i := 0; i < b.N; i++ {
@@ -280,6 +334,50 @@ func BenchmarkRagel_Lookup(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, off := range offsetAddrs {
 			if ptrn.Index(off) < 0 {
+				b.Fatalf("the pattern %s must give true when matched against %s", ptrn, string(off))
+			}
+		}
+	}
+}
+
+func BenchmarkPattern_UUIDLookup(b *testing.B) {
+	ptrn, _ := pattern.NewPattern("........-....-....-....-............")
+	for i := 0; i < b.N; i++ {
+		for _, off := range offsetUUIDs {
+			if ptrn.Lookup(off) == nil {
+				b.Fatalf("the pattern %s must return non-nil against %s", ptrn, string(off))
+			}
+		}
+	}
+}
+
+func BenchmarkPattern_UUIDShortLookup(b *testing.B) {
+	ptrn, _ := pattern.NewPattern("........-....-....-....-............")
+	for i := 0; i < b.N; i++ {
+		for _, off := range offsetUUIDs {
+			if ptrn.ShortLookup(off) == nil {
+				b.Fatalf("the pattern %s must return non-nil against %s", ptrn, string(off))
+			}
+		}
+	}
+}
+
+func BenchmarkRegexp_UUIDLookup(b *testing.B) {
+	ptrn := regexp.MustCompile("........-....-....-....-............")
+	for i := 0; i < b.N; i++ {
+		for _, off := range offsetUUIDs {
+			if ptrn.Find(off) == nil {
+				b.Fatalf("the pattern %s must return non-nil against %s", ptrn, string(off))
+			}
+		}
+	}
+}
+
+func BenchmarkRagel_UUIDLookup(b *testing.B) {
+	var ptrn ragel.Stuff
+	for i := 0; i < b.N; i++ {
+		for _, off := range offsetUUIDs {
+			if ptrn.UUIDIndex(off) < 0 {
 				b.Fatalf("the pattern %s must give true when matched against %s", ptrn, string(off))
 			}
 		}

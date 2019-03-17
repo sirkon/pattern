@@ -1,0 +1,24 @@
+package ragel
+
+
+
+
+%% machine uuid_match;
+%% write data;
+
+
+
+func (r *Stuff) UUIDMatch(data []byte) bool {
+	cs, p, pe := 0, 0, len(data)
+
+    %%{
+        action matched    { return true }
+
+	    main := any any any any any any any any "-" any any any any "-" any any any any "-" any any any any "-" any any any any any any any any @ matched;
+
+	    write init;
+	    write exec;
+	}%%
+
+	return false
+}

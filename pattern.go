@@ -51,25 +51,24 @@ func (p *Pattern) Match(source []byte) bool {
 
 // Lookup returns a rest of source with a head matching against current pattern. Returns nil if no matches weren't found
 func (p *Pattern) Lookup(source []byte) []byte {
+	if len(source) < p.length() {
+		return nil
+	}
 	if p.first == 0 {
-		if len(source) < p.length() {
-			return nil
-		}
 		return source
 	}
 
 	var realPos int
 	origSource := source
+	source = source[:len(source)-p.length()+1+p.firstOffset] // we are not going to search a pattern outside of source
 	for {
-		if len(origSource)-realPos < p.length() {
-			return nil
-		}
-
 		// Look for first non-wildcard of a pattern
 		pos := bytes.IndexByte(source, p.first)
 		if pos < 0 {
 			return nil
 		}
+
+		// Passing it as this symbol is before there could be a match
 		if pos < p.firstOffset {
 			source = source[pos+1:]
 			realPos += pos + 1
@@ -77,13 +76,51 @@ func (p *Pattern) Lookup(source []byte) []byte {
 		}
 
 		realPos += pos
-		if len(origSource)-realPos+p.firstOffset < p.length() {
-			return nil
-		}
 		if p.isPrefixOf(origSource[realPos-p.firstOffset:]) {
 			return origSource[realPos-p.firstOffset:]
 		}
-		source = source[realPos+1:]
+		source = source[pos+1:]
+		realPos += 1
+	}
+}
+
+// ShortLookup the result is the same Lookup what do. But this method is optimized for shorter distances.
+func (p *Pattern) ShortLookup(source []byte) []byte {
+	if len(source) < p.length() {
+		return nil
+	}
+	if p.first == 0 {
+		return source
+	}
+
+	var realPos int
+	origSource := source
+	source = source[:len(source)-p.length()+1+p.firstOffset] // we are not going to search a pattern outside of source
+	for {
+		// Look for first non-wildcard of a pattern
+		pos := -1
+		for i, c := range source {
+			if c == p.first {
+				pos = i
+				break
+			}
+		}
+		if pos < 0 {
+			return nil
+		}
+
+		// Passing it as this symbol is before there could be a match
+		if pos < p.firstOffset {
+			source = source[pos+1:]
+			realPos += pos + 1
+			continue
+		}
+
+		realPos += pos
+		if p.isPrefixOf(origSource[realPos-p.firstOffset:]) {
+			return origSource[realPos-p.firstOffset:]
+		}
+		source = source[pos+1:]
 		realPos += 1
 	}
 }
@@ -105,7 +142,7 @@ func (p *Pattern) isPrefixOf(source []byte) bool {
 		}
 	}
 	for i := u64len * 8; i < len(p.pattern); i++ {
-		if p.mask[i] != 0 && source[i] != p.pattern[i] {
+		if p.pattern[i] != 0 && source[i] != p.pattern[i] {
 			return false
 		}
 	}
