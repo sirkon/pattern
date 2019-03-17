@@ -4,7 +4,7 @@ go:
   - 1.11.x
 
 install:
-  - go get -v -d -t github.com/sirkon/travis
+  - go get -v -d -t github.com/sirkon/pattern
 
 script:
   - go test -v github.com/sirkon/pattern
