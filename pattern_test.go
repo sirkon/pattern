@@ -212,7 +212,7 @@ func init() {
 		for j := range opts {
 			opts[j] = i
 		}
-		for k := 0; k < 128; k++ {
+		for k := 0; k < 16; k++ {
 			offsetAddrs = append(offsetAddrs, []byte(
 				strings.Repeat(" ", k)+fmt.Sprintf("%x%x:%x%x:%x%x:%x%x:%x%x:%x%x", opts...),
 			))

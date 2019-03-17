@@ -1,4 +1,6 @@
 # pattern
+[![Build Status](https://travis-ci.org/sirkon/pattern.svg?branch=master)](https://travis-ci.org/sirkon/pattern)
+
 This library is aimed to deal with simple patterns, i.e. patterns of certain length with some positions being wildcards
 
 ## Samples of patterns
@@ -58,7 +60,7 @@ func main() {
 | BenchmarkRagel_Lookup-4      | 10000      | 122183ns/op               |
 
 As you see, regular expression are much-much slower (there's a room for optimization I believe though). And pattern 
-vs ragel comparsion is bit tricky: ragel is almost 2 times faster at regular match but loses at lookup. Lookup
+vs ragel comparsion is bit tricky: ragel is 1.25 times faster at regular match but loses at lookup. Lookup
 comparison was done with this sample set.  
 
 | Spaces in the head | Pattern                |
@@ -70,5 +72,5 @@ comparison was done with this sample set.
 | 128                | ` … 00:00:00:00:00:00` | 
 
 
-But Ragel is as fast as current implementation when limited to 21 character in the head and faster with shorter 
-prefixes. Other patterns may lead to different results of course. 
+But Ragel is as fast as current implementation when limited to 16 character in the head and faster with shorter 
+prefixes. Obviously, other patterns and source strings may lead to different results. 
