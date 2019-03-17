@@ -7,18 +7,20 @@ package pattern
 
 import (
 	"bytes"
+	"unsafe"
 )
 
 // NewPattern pattern constructor
 func NewPattern(pattern string) (*Pattern, error) {
 	var res Pattern
 
-	ptrn, first, offset, err := parsePattern(pattern)
+	ptrn, mask, first, offset, err := parsePattern(pattern)
 	if err != nil {
 		return nil, err
 	}
 	res.text = pattern
 	res.pattern = ptrn
+	res.mask = mask
 	res.first = first
 	res.firstOffset = offset
 	return &res, nil
@@ -28,6 +30,7 @@ func NewPattern(pattern string) (*Pattern, error) {
 type Pattern struct {
 	text        string
 	pattern     []byte
+	mask        []byte
 	first       byte
 	firstOffset int
 }
@@ -90,10 +93,22 @@ func (p *Pattern) length() int {
 }
 
 func (p *Pattern) isPrefixOf(source []byte) bool {
-	for i, mask := range p.pattern {
-		if mask != 0 && source[i] != mask {
+	u64len := len(p.pattern) / 8
+	for k := 0; k <= u64len; k++ {
+		j := k * 8
+		mask := *(*uint64)(unsafe.Pointer(&p.mask[j]))
+		pattern := *(*uint64)(unsafe.Pointer(&p.pattern[j]))
+		value := *(*uint64)(unsafe.Pointer(&source[j]))
+
+		if mask&value != pattern {
 			return false
 		}
 	}
+	for i := u64len * 8; i < len(p.pattern); i++ {
+		if p.mask[i] != 0 && source[i] != p.pattern[i] {
+			return false
+		}
+	}
+
 	return true
 }

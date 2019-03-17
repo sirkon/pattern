@@ -50,12 +50,12 @@ func main() {
 
 | Test name                    | Iterations | Operations per nanosecond |
 |------------------------------|------------|---------------------------|
-| BenchmarkPattern_Match-4     | 10000000   | 207 ns/op                 |
+| BenchmarkPattern_Match-4     | 10000000   | 139 ns/op                 |
 | BenchmarkRegexp_Match-4      | 500000     | 3235 ns/op                |
-| BenchmarkRagel_Match-4       | 20000000   | 113 ns/op                 |
-| BenchmarkPattern_Lookup-4    | 30000      | 53126 ns/op               |
+| BenchmarkRagel_Match-4       | 20000000   | 112 ns/op                 |
+| BenchmarkPattern_Lookup-4    | 30000      | 45475 ns/op               |
 | BenchmarkRegexp_Lookup-4     | 300        | 4562271 ns/op             |
-| BenchmarkRagel_Lookup-4      | 10000      | 123065 ns/op              |
+| BenchmarkRagel_Lookup-4      | 10000      | 122183ns/op               |
 
 As you see, regular expression are much-much slower (there's a room for optimization I believe though). And pattern 
 vs ragel comparsion is bit tricky: ragel is almost 2 times faster at regular match but loses at lookup. Lookup

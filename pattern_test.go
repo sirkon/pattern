@@ -48,6 +48,12 @@ func TestPattern_isPrefixOf(t *testing.T) {
 			source:  "",
 			want:    false,
 		},
+		{
+			name:    "regression-1",
+			pattern: "..:..:..:..:..:..",
+			source:  "0:11:22:33:44:55    ",
+			want:    false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -206,7 +212,7 @@ func init() {
 		for j := range opts {
 			opts[j] = i
 		}
-		for k := 0; k < 21; k++ {
+		for k := 0; k < 128; k++ {
 			offsetAddrs = append(offsetAddrs, []byte(
 				strings.Repeat(" ", k)+fmt.Sprintf("%x%x:%x%x:%x%x:%x%x:%x%x:%x%x", opts...),
 			))
