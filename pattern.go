@@ -130,19 +130,23 @@ func (p *Pattern) length() int {
 }
 
 func (p *Pattern) isPrefixOf(source []byte) bool {
-	u64len := len(p.pattern) / 8
+	u64len := len(p.pattern) >> 3
+	pmask := unsafe.Pointer(&p.mask[0])
+	ppattern := unsafe.Pointer(&p.pattern[0])
+	psource := unsafe.Pointer(&source[0])
 	for k := 0; k <= u64len; k++ {
-		j := k * 8
-		mask := *(*uint64)(unsafe.Pointer(&p.mask[j]))
-		pattern := *(*uint64)(unsafe.Pointer(&p.pattern[j]))
-		value := *(*uint64)(unsafe.Pointer(&source[j]))
+		j := k << 3
+		mask := *(*uint64)(unsafe.Pointer(uintptr(pmask) + uintptr(j)))
+		pattern := *(*uint64)(unsafe.Pointer(uintptr(ppattern) + uintptr(j)))
+		value := *(*uint64)(unsafe.Pointer(uintptr(psource) + uintptr(j)))
 
 		if mask&value != pattern {
 			return false
 		}
 	}
 	for i := u64len * 8; i < len(p.pattern); i++ {
-		if p.pattern[i] != 0 && source[i] != p.pattern[i] {
+		v := *(*byte)(unsafe.Pointer(uintptr(pmask) + uintptr(i)))
+		if v != 0 && source[i] != v {
 			return false
 		}
 	}
