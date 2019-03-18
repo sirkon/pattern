@@ -54,6 +54,12 @@ func TestPattern_isPrefixOf(t *testing.T) {
 			source:  "0:11:22:33:44:55    ",
 			want:    false,
 		},
+		{
+			name:    "regression-aa",
+			pattern: "a..a",
+			source:  "aaaa",
+			want:    true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -73,6 +79,13 @@ func TestPattern_isPrefixOf(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestRegressionManual(t *testing.T) {
+	p, _ := pattern.NewPattern("a..a")
+	if !p.Match([]byte("aaaa")) {
+		t.Fatalf("must be a match")
 	}
 }
 
@@ -197,7 +210,7 @@ func TestRagelCheck(t *testing.T) {
 }
 
 var macAddrs [][]byte
-var aaSampes [][]byte
+var aaSamples [][]byte
 var offsetAddrs [][]byte
 var uuids [][]byte
 var offsetUUIDs [][]byte
@@ -212,7 +225,7 @@ func init() {
 	}
 
 	for i := 'a'; i <= 'z'; i++ {
-		aaSampes = append(aaSampes, []byte(fmt.Sprintf("a%s%sa", string(i), string(i))))
+		aaSamples = append(aaSamples, []byte(fmt.Sprintf("a%s%sa", string(i), string(i))))
 	}
 
 	for i := 0; i < 16; i++ {
@@ -237,6 +250,39 @@ func init() {
 		uuid := strings.ReplaceAll(uuidSample, "0", fmt.Sprintf("%x", i))
 		for k := 0; k < 8; k++ {
 			offsetUUIDs = append(offsetUUIDs, []byte(strings.Repeat(" ", k)+uuid))
+		}
+	}
+}
+
+func BenchmarkPattern_AAMatch(b *testing.B) {
+	ptrn, _ := pattern.NewPattern("a..a")
+	for i := 0; i < b.N; i++ {
+		for _, aaSample := range aaSamples {
+			if !ptrn.Match(aaSample) {
+				b.Fatalf("the pattern %s must gives true when matched against %s", ptrn, string(aaSample))
+			}
+		}
+	}
+}
+
+func BenchmarkRegexp_AAMatch(b *testing.B) {
+	ptrn := regexp.MustCompile(`^a..a$`)
+	for i := 0; i < b.N; i++ {
+		for _, aaSample := range aaSamples {
+			if !ptrn.Match(aaSample) {
+				b.Fatalf("the pattern %s must gives true when matched against %s", ptrn, string(aaSample))
+			}
+		}
+	}
+}
+
+func BenchmarkRagel_AAMatch(b *testing.B) {
+	var ptrn ragel.Stuff
+	for i := 0; i < b.N; i++ {
+		for _, aaSample := range aaSamples {
+			if !ptrn.AAMatch(aaSample) {
+				b.Fatalf("the pattern %s must gives true when matched against %s", ptrn, string(aaSample))
+			}
 		}
 	}
 }

@@ -1,0 +1,24 @@
+package ragel
+
+
+
+
+%% machine aamatch;
+%% write data;
+
+
+func (r *Stuff) AAMatch(data []byte) bool {
+	cs, p, pe := 0, 0, len(data)
+
+	%%{
+        action matched    { return true }
+
+	    main := "a" any any "a" @ matched;
+
+	    write init;
+	    write exec;
+	}%%
+
+	return false
+}
+

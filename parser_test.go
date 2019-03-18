@@ -8,6 +8,7 @@ import (
 func Test_patternParser(t *testing.T) {
 	tests := []struct {
 		name    string
+		length  int
 		pattern string
 		ptrn    []byte
 		mask    []byte
@@ -17,9 +18,10 @@ func Test_patternParser(t *testing.T) {
 	}{
 		{
 			name:    "all-pattern",
+			length:  6,
 			pattern: "......",
-			ptrn:    []byte{0, 0, 0, 0, 0, 0},
-			mask:    []byte{0, 0, 0, 0, 0, 0},
+			ptrn:    []byte{0, 0, 0, 0, 0, 0, 0, 0},
+			mask:    []byte{0, 0, 0, 0, 0, 0, 0, 0},
 			first:   0,
 			offset:  0,
 			wantErr: false,
@@ -27,8 +29,9 @@ func Test_patternParser(t *testing.T) {
 		{
 			name:    "simple-pattern",
 			pattern: "...ab..",
-			ptrn:    []byte{0, 0, 0, 'a', 'b', 0, 0},
-			mask:    []byte{0, 0, 0, 0xff, 0xff, 0, 0},
+			length:  7,
+			ptrn:    []byte{0, 0, 0, 'a', 'b', 0, 0, 0},
+			mask:    []byte{0, 0, 0, 0xff, 0xff, 0, 0, 0},
 			first:   'a',
 			offset:  3,
 			wantErr: false,
@@ -36,8 +39,9 @@ func Test_patternParser(t *testing.T) {
 		{
 			name:    "all-escapes",
 			pattern: `..\n\r\t\.\` + "`...",
-			ptrn:    []byte{0, 0, '\n', '\r', '\t', '.', '`', 0, 0, 0},
-			mask:    []byte{0, 0, 0xff, 0xff, 0xff, 0xff, 0xff, 0, 0, 0},
+			length:  10,
+			ptrn:    []byte{0, 0, '\n', '\r', '\t', '.', '`', 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			mask:    []byte{0, 0, 0xff, 0xff, 0xff, 0xff, 0xff, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 			first:   '\n',
 			offset:  2,
 			wantErr: false,
@@ -69,10 +73,13 @@ func Test_patternParser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ptrn, mask, first, offset, err := parsePattern(tt.pattern)
+			length, ptrn, mask, first, offset, err := parsePattern(tt.pattern)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("parsePattern() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+			if length != tt.length {
+				t.Errorf("parserPattern() length = %v, want %v", length, tt.length)
 			}
 			if !reflect.DeepEqual(ptrn, tt.ptrn) {
 				t.Errorf("parsePattern() ptrn = %v, want %v", ptrn, tt.ptrn)

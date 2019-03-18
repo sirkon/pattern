@@ -22,11 +22,11 @@ var acceptableEscapes = map[byte]byte{
 
 // CheckPattern checks if pattern is correct
 func CheckPattern(pattern string) bool {
-	_, _, _, _, err := parsePattern(pattern)
+	_, _, _, _, _, err := parsePattern(pattern)
 	return err == nil
 }
 
-func parsePattern(pattern string) ([]byte, []byte, byte, int, error) {
+func parsePattern(pattern string) (int, []byte, []byte, byte, int, error) {
 	state := parserStateRegular
 	var ptrn []byte
 	var mask []byte
@@ -60,7 +60,7 @@ func parsePattern(pattern string) ([]byte, []byte, byte, int, error) {
 		case parserStateExtended:
 			char, acceptableEscape := acceptableEscapes[c]
 			if !acceptableEscape {
-				return nil, nil, 0, 0, fmt.Errorf(`parsing error, only \n, \r, \t, \\, \. and \`+"` are allowed, got \\%s", string(c))
+				return 0, nil, nil, 0, 0, fmt.Errorf(`parsing error, only \n, \r, \t, \\, \. and \`+"` are allowed, got \\%s", string(c))
 			}
 			state = parserStateRegular
 			ptrn = append(ptrn, char)
@@ -75,12 +75,18 @@ func parsePattern(pattern string) ([]byte, []byte, byte, int, error) {
 	}
 
 	if state == parserStateExtended {
-		return nil, nil, 0, 0, fmt.Errorf("empty escape at the end of pattern string")
+		return 0, nil, nil, 0, 0, fmt.Errorf("empty escape at the end of pattern string")
 	}
 
+	origLength := len(ptrn)
 	if len(ptrn) == 0 {
-		return nil, nil, 0, 0, fmt.Errorf("empty pattern")
+		return 0, nil, nil, 0, 0, fmt.Errorf("empty pattern")
+	}
+	if len(ptrn)%8 != 0 {
+		bytesAppend := 8 - len(ptrn)%8
+		ptrn = append(ptrn, make([]byte, bytesAppend)...)
+		mask = append(mask, make([]byte, bytesAppend)...)
 	}
 
-	return ptrn, mask, first, offset, nil
+	return origLength, ptrn, mask, first, offset, nil
 }

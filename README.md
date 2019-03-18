@@ -52,10 +52,13 @@ func main() {
 
 | Test name                    | Iterations | Operation cost in ns      |
 |------------------------------|------------|---------------------------|
-| BenchmarkPattern_Match-4     | 10000000   | 127 ns/op                 |
+| BenchmarkPattern_Match-4     | 10000000   | 126 ns/op                 |
 | BenchmarkRegexp_Match-4      | 500000     | 3235 ns/op                |
 | BenchmarkRagel_Match-4       | 20000000   | 112 ns/op                 |
-| BenchmarkPattern_Lookup-4    | 30000      | 43941 ns/op               |
+| BenchmarkPattern_UUIDMatch-4 | 10000000	| 142 ns/op                 |
+| BenchmarkRegexp_UUIDMatch-4  | 300000	    | 5872 ns/op                |
+| BenchmarkRagel_UUIDMatch-4   | 10000000	| 138 ns/op                 |
+| BenchmarkPattern_Lookup-4    | 30000      | 43698 ns/op               |
 | BenchmarkRegexp_Lookup-4     | 300        | 4562271 ns/op             |
 | BenchmarkRagel_Lookup-4      | 10000      | 121227 ns/op              |
 
