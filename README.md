@@ -55,15 +55,15 @@ func main() {
   BenchmarkShortPattern_AAMatch-4 | `a..a`                                 | 50000000   | 35.6 ns/op                |
   BenchmarkRegexp_AAMatch-4       |                                        | 500000     | 2473 ns/op                |
   BenchmarkRagel_AAMatch-4        |                                        | 20000000   | 106 ns/op                 |
-| BenchmarkPattern_Match-4        | `..:..:..:..:..:.. `                   | 10000000   | 116 ns/op                 |
+| BenchmarkPattern_Match-4        | `..:..:..:..:..:.. `                   | 10000000   | 114 ns/op                 |
 | BenchmarkRegexp_Match-4         |                                        | 500000     | 3235 ns/op                |
 | BenchmarkRagel_Match-4          |                                        | 20000000   | 111 ns/op                 |
-| BenchmarkPattern_UUIDMatch-4    | `........-....-....-....-............` | 10000000	| 132 ns/op                 |
+| BenchmarkPattern_UUIDMatch-4    | `........-....-....-....-............` | 10000000	| 131 ns/op                 |
 | BenchmarkRegexp_UUIDMatch-4     |                                        | 300000	    | 5872 ns/op                |
-| BenchmarkRagel_UUIDMatch-4      |                                        | 10000000	| 138 ns/op                 |
+| BenchmarkRagel_UUIDMatch-4      |                                        | 10000000	| 137 ns/op                 |
 | BenchmarkPattern_Lookup-4       | `..:..:..:..:..:.. `                   | 30000      | 41369 ns/op               |
 | BenchmarkRegexp_Lookup-4        |                                        | 300        | 4423623 ns/op             |
-| BenchmarkRagel_Lookup-4         |                                        | 10000      | 121116 ns/op              |
+| BenchmarkRagel_Lookup-4         |                                        | 10000      | 115305 ns/op              |
    
 As you see, regular expression are much-much slower (there's a room for optimization I believe though). Ragel is 
 destroyed for short patterns (up to 8 characters) in the case of 4-character long one. Slightly faster at medium
