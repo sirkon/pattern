@@ -1,44 +1,40 @@
-TEXT ·isIndexOf(SB), $0-40
-    MOVQ    pattern + 0(FP), SI
-    MOVQ    mask + 0(FP), DI
-    MOVQ    source + 0(FP), DX
-    MOVQ    length + 0(FP), CX
-    XOR     AX, AX
-    MOVQ    AX, length + 32(FP) // set up default result as false
-    XORPS   xmm1, xm11          // need to have it zero
+TEXT ·isPrefixOf(SB), $0-40
+    MOVQ    pattern + 0(FP), SI   // SI = pointer to pattern
+    MOVQ    pattern + 8(FP), DI   // DI = pointer to mask
+    MOVQ    pattern + 16(FP), DX  // DX = pointer to a text to match
+    MOVQ    pattern + 24(FP), CX
+    XORQ    AX, AX
+    MOVQ    AX, pattern + 32(FP)  // set up default result as false
+//    XORPS   X1, X1              // need to have it zero
 
-    // We are comparing using SSE 128 bit registers here. docts means "double octs"
+    // We are compare using SSE 128 bit registers here. "docts" means "double octs"
 docts:
-    CMP     CX, 16
+    CMPQ    CX, $16
     JL      octs
-    MOVDQU  (DI), xmm0
-    ANDPS   (DX), xmm0
-    XORPS   (SI), xmm0
-    PTEST   xmm0, xmm0
+    MOVOU   (DX), X0
+    PAND    (DI), X0
+    PXOR    (SI), X0
+    PTEST   X0, X0
     JNZ     exit
-    ADDQ    DI, 16
-    ADDQ    DX, 16
-    ADDQ    SI, 16
-    SUBQ    CX, 16
+    ADDQ    $16, DI
+    ADDQ    $16, DX
+    ADDQ    $16, SI
+    SUBQ    $16, CX
     JMP     docts
 
-    // less than 16 bytes left, using 8 byte words to deal with
-    OR      CX, CX
 octs:
+    // less than 16 bytes left. I mean 8 bytes left, using 8 byte (64bit) general purpose register to deal with
+    ORQ     CX, CX
     JZ      success
+
     MOVQ    (DI), AX
     ANDQ    (DX), AX
     XORQ    (SI), AX
     JNZ     exit
-    ADDQ    DI, 8
-    ADDQ    DX, 8
-    ADDQ    SI, 8
-    SUBQ    CX, 8
-    JMP     octs
 
 success:
 // making result true
-    MOVQ    AX, 1
+    MOVQ    $1, AX
     MOVQ    AX, length + 32(FP)
 
 exit:

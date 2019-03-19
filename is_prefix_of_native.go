@@ -3,7 +3,6 @@
 package pattern
 
 import (
-	"bytes"
 	"unsafe"
 )
 
@@ -19,14 +18,6 @@ func isPrefixOf(pattern, mask, source uintptr, length int) bool {
 			return false
 		}
 	}
-	for i := u64len * 8; i < length; i++ {
-		v := *(*byte)(unsafe.Pointer(pattern + uintptr(i)))
-		if v != 0 && *(*byte)(unsafe.Pointer(source + uintptr(i))) != v {
-			return false
-		}
-	}
-
-	bytes.IndexByte()
 
 	return true
 }

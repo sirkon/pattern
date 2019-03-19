@@ -82,13 +82,6 @@ func TestPattern_isPrefixOf(t *testing.T) {
 	}
 }
 
-func TestRegressionManual(t *testing.T) {
-	p, _ := pattern.NewPattern("a..a")
-	if !p.Match([]byte("aaaa")) {
-		t.Fatalf("must be a match")
-	}
-}
-
 func TestPattern_Lookup(t *testing.T) {
 	p, _ := pattern.NewPattern("..:..:..:..:..:..")
 
@@ -210,7 +203,7 @@ func TestRagelCheck(t *testing.T) {
 }
 
 var macAddrs [][]byte
-var aaSamples [][]byte
+var aaSamples []byte
 var offsetAddrs [][]byte
 var uuids [][]byte
 var offsetUUIDs [][]byte
@@ -225,7 +218,7 @@ func init() {
 	}
 
 	for i := 'a'; i <= 'z'; i++ {
-		aaSamples = append(aaSamples, []byte(fmt.Sprintf("a%s%sa", string(i), string(i))))
+		aaSamples = append(aaSamples, []byte(fmt.Sprintf("a%s%sa", string(i), string(i)))...)
 	}
 
 	for i := 0; i < 16; i++ {
@@ -254,13 +247,15 @@ func init() {
 	}
 }
 
-func BenchmarkPattern_AAMatch(b *testing.B) {
-	ptrn, _ := pattern.NewPattern("a..a")
+func BenchmarkShortPattern_AAMatch(b *testing.B) {
+	ptrn, _ := pattern.NewShortPattern("a..a")
 	for i := 0; i < b.N; i++ {
-		for _, aaSample := range aaSamples {
-			if !ptrn.Match(aaSample) {
-				b.Fatalf("the pattern %s must gives true when matched against %s", ptrn, string(aaSample))
+		samples := aaSamples
+		for len(samples) > 0 {
+			if !ptrn.Match(samples[:4]) {
+				b.Fatalf("the pattern %s must give true when matched against %s", ptrn, string(samples[:4]))
 			}
+			samples = samples[4:]
 		}
 	}
 }
@@ -268,10 +263,12 @@ func BenchmarkPattern_AAMatch(b *testing.B) {
 func BenchmarkRegexp_AAMatch(b *testing.B) {
 	ptrn := regexp.MustCompile(`^a..a$`)
 	for i := 0; i < b.N; i++ {
-		for _, aaSample := range aaSamples {
-			if !ptrn.Match(aaSample) {
-				b.Fatalf("the pattern %s must gives true when matched against %s", ptrn, string(aaSample))
+		samples := aaSamples
+		for len(samples) > 0 {
+			if !ptrn.Match(samples[:4]) {
+				b.Fatalf("the pattern %s must gives true when matched against %s", ptrn, string(samples[:4]))
 			}
+			samples = samples[4:]
 		}
 	}
 }
@@ -279,10 +276,12 @@ func BenchmarkRegexp_AAMatch(b *testing.B) {
 func BenchmarkRagel_AAMatch(b *testing.B) {
 	var ptrn ragel.Stuff
 	for i := 0; i < b.N; i++ {
-		for _, aaSample := range aaSamples {
-			if !ptrn.AAMatch(aaSample) {
-				b.Fatalf("the pattern %s must gives true when matched against %s", ptrn, string(aaSample))
+		samples := aaSamples
+		for len(samples) > 0 {
+			if !ptrn.AAMatch(samples[:4]) {
+				b.Fatalf("the pattern %s must gives true when matched against %s", ptrn, string(samples[:4]))
 			}
+			samples = samples[4:]
 		}
 	}
 }

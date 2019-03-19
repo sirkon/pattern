@@ -80,7 +80,7 @@ func (p *Pattern) Lookup(source []byte) []byte {
 		}
 
 		realPos += pos
-		// if isPrefixOf(ppatern, pmask, uintptr(unsafe.Pointer(&origSource[realPos-p.firstOffset])), len(p.pattern)) {
+		// if isPrefixOf(ppatern, pmask, uintptr(unsafe.Pointer(&origSource[realPos-p.firstOffset])), p.length) {
 		// 	return origSource[realPos-p.firstOffset:]
 		// }
 		if p.isPrefixOf(origSource[realPos-p.firstOffset:]) {
@@ -166,16 +166,5 @@ func (p *Pattern) isPrefixOf(source []byte) bool {
 		}
 	}
 
-	jump := uintptr(u64len << 3)
-	rest := len(p.pattern) - u64len<<3
-	return rest == 0 ||
-		(intMasks[rest]&*(*uint64)(unsafe.Pointer(uintptr(pmask) + jump))&*(*uint64)(unsafe.Pointer(uintptr(psource) + jump))^
-			*(*uint64)(unsafe.Pointer(uintptr(ppattern) + jump))) == 0
-	// for i := u64len * 8; i < len(p.pattern); i++ {
-	// 	v := *(*byte)(unsafe.Pointer(uintptr(pmask) + uintptr(i)))
-	// 	if v != 0 && source[i] != v {
-	// 		return false
-	// 	}
-	// }
-	// return true
+	return true
 }
