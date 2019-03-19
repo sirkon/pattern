@@ -207,6 +207,7 @@ var aaSamples []byte
 var offsetAddrs [][]byte
 var uuids [][]byte
 var offsetUUIDs [][]byte
+var realWorldMacAddr [][]byte
 
 func init() {
 	for i := 0; i < 16; i++ {
@@ -244,6 +245,13 @@ func init() {
 		for k := 0; k < 8; k++ {
 			offsetUUIDs = append(offsetUUIDs, []byte(strings.Repeat(" ", k)+uuid))
 		}
+	}
+
+	line1 := `Dec  3 19:37:13 localhost dhcpd: DHCPREQUEST for 192.168.100.10 (192.168.100.1) from 11:22:33:44:55:66 (MYHOST) via eth0`
+	line2 := `11:22:33:44:55:66`
+	line3 := `2019:15:00:01-00Z localhost myapp: REQUEST FROM MAC: 11:22:33:44:55:66 made`
+	for i := 0; i < 100000; i++ {
+		realWorldMacAddr = append(realWorldMacAddr, []byte(line1), []byte(line2), []byte(line3))
 	}
 }
 
@@ -396,17 +404,6 @@ func BenchmarkPattern_UUIDLookup(b *testing.B) {
 	}
 }
 
-func BenchmarkPattern_UUIDShortLookup(b *testing.B) {
-	ptrn, _ := pattern.NewPattern("........-....-....-....-............")
-	for i := 0; i < b.N; i++ {
-		for _, off := range offsetUUIDs {
-			if ptrn.ShortLookup(off) == nil {
-				b.Fatalf("the pattern %s must return non-nil against %s", ptrn, string(off))
-			}
-		}
-	}
-}
-
 func BenchmarkRegexp_UUIDLookup(b *testing.B) {
 	ptrn := regexp.MustCompile("........-....-....-....-............")
 	for i := 0; i < b.N; i++ {
@@ -424,6 +421,39 @@ func BenchmarkRagel_UUIDLookup(b *testing.B) {
 		for _, off := range offsetUUIDs {
 			if ptrn.UUIDIndex(off) < 0 {
 				b.Fatalf("the pattern %s must give true when matched against %s", ptrn, string(off))
+			}
+		}
+	}
+}
+
+func BenchmarkPattern_RealWorldMacAddrLookup(b *testing.B) {
+	ptrn, _ := pattern.NewPattern(`..:..:..:..:..:..`)
+	for i := 0; i < b.N; i++ {
+		for _, line := range realWorldMacAddr {
+			if ptrn.Lookup(line) == nil {
+				b.Fatal("didn't locate existing pattern in a line")
+			}
+		}
+	}
+}
+
+func BenchmarkRegexp_RealWorldMacAddrLookup(b *testing.B) {
+	ptrn := regexp.MustCompile(`..:..:..:..:..:...*`)
+	for i := 0; i < b.N; i++ {
+		for _, line := range realWorldMacAddr {
+			if ptrn.Find(line) == nil {
+				b.Fatal("didn't locate existing pattern in a line")
+			}
+		}
+	}
+}
+
+func BenchmarkRagel_RealWorldMacAddrLookup(b *testing.B) {
+	var ptrn ragel.Stuff
+	for i := 0; i < b.N; i++ {
+		for _, line := range realWorldMacAddr {
+			if ptrn.Index(line) < 0 {
+				b.Fatal("didn't locate existing pattern in a line")
 			}
 		}
 	}
