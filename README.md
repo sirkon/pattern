@@ -52,10 +52,10 @@ func main() {
 
 | Test name                       | Pattern text                           | Iterations | Operation cost in ns      | 
 |---------------------------------|----------------------------------------|------------|---------------------------|
-  BenchmarkShortPattern_AAMatch-4 | `a..a`                                 | 50000000   | 35.6 ns/op                |
+  BenchmarkShortPattern_AAMatch-4 | `a..a`                                 | 50000000   | 35.2 ns/op                |
   BenchmarkRegexp_AAMatch-4       |                                        | 500000     | 2473 ns/op                |
   BenchmarkRagel_AAMatch-4        |                                        | 20000000   | 106 ns/op                 |
-| BenchmarkPattern_Match-4        | `..:..:..:..:..:.. `                   | 10000000   | 114 ns/op                 |
+| BenchmarkPattern_Match-4        | `..:..:..:..:..:.. `                   | 10000000   | 113 ns/op                 |
 | BenchmarkRegexp_Match-4         |                                        | 500000     | 3235 ns/op                |
 | BenchmarkRagel_Match-4          |                                        | 20000000   | 111 ns/op                 |
 | BenchmarkPattern_UUIDMatch-4    | `........-....-....-....-............` | 10000000	| 131 ns/op                 |

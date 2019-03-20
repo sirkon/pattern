@@ -83,6 +83,7 @@ func (p *Pattern) Lookup(source []byte) []byte {
 		// if isPrefixOf(ppatern, pmask, uintptr(unsafe.Pointer(&origSource[realPos-p.firstOffset])), p.length) {
 		// 	return origSource[realPos-p.firstOffset:]
 		// }
+
 		if p.isPrefixOf(origSource[realPos-p.firstOffset:]) {
 			return origSource[realPos-p.firstOffset:]
 		}
