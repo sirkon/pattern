@@ -30,12 +30,13 @@ octs:
     MOVQ    (DI), AX
     ANDQ    (DX), AX
     XORQ    (SI), AX
+
     JNZ     exit
 
 success:
 // making result true
     MOVQ    $1, AX
-    MOVQ    AX, length + 32(FP)
+    MOVQ    AX, pattern + 32(FP)
 
 exit:
     RET

@@ -63,8 +63,8 @@ func (p *Pattern) Lookup(source []byte) []byte {
 	var realPos int
 	origSource := source
 	source = source[:len(source)-p.length+1+p.firstOffset] // we are not going to search a pattern outside of source
-	// ppatern := uintptr(unsafe.Pointer(&p.pattern[0]))
-	// pmask := uintptr(unsafe.Pointer(&p.mask[0]))
+	ppatern := uintptr(unsafe.Pointer(&p.pattern[0]))
+	pmask := uintptr(unsafe.Pointer(&p.mask[0]))
 	for {
 		// Look for first non-wildcard of a pattern
 		pos := bytes.IndexByte(source, p.first)
@@ -80,13 +80,13 @@ func (p *Pattern) Lookup(source []byte) []byte {
 		}
 
 		realPos += pos
-		// if isPrefixOf(ppatern, pmask, uintptr(unsafe.Pointer(&origSource[realPos-p.firstOffset])), p.length) {
-		// 	return origSource[realPos-p.firstOffset:]
-		// }
-
-		if p.isPrefixOf(origSource[realPos-p.firstOffset:]) {
+		if isPrefixOf(ppatern, pmask, uintptr(unsafe.Pointer(&origSource[realPos-p.firstOffset])), p.length) {
 			return origSource[realPos-p.firstOffset:]
 		}
+
+		// if p.isPrefixOf(origSource[realPos-p.firstOffset:]) {
+		// 	return origSource[realPos-p.firstOffset:]
+		// }
 		source = source[pos+1:]
 		realPos += 1
 	}

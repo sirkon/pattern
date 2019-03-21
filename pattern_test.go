@@ -208,6 +208,7 @@ var offsetAddrs [][]byte
 var uuids [][]byte
 var offsetUUIDs [][]byte
 var realWorldMacAddr [][]byte
+var falsePositivesMacAddrs [][]byte
 
 func init() {
 	for i := 0; i < 16; i++ {
@@ -231,6 +232,11 @@ func init() {
 			offsetAddrs = append(offsetAddrs, []byte(
 				strings.Repeat(" ", k)+fmt.Sprintf("%x%x:%x%x:%x%x:%x%x:%x%x:%x%x", opts...),
 			))
+		}
+		for k := 0; k < 16; k++ {
+			falsePositivesMacAddrs = append(falsePositivesMacAddrs,
+				[]byte(strings.Repeat("   :   ", k)+fmt.Sprintf("%x%x:%x%x:%x%x:%x%x:%x%x:%x%x", opts...)),
+			)
 		}
 	}
 
@@ -452,6 +458,39 @@ func BenchmarkRagel_RealWorldMacAddrLookup(b *testing.B) {
 	var ptrn ragel.Stuff
 	for i := 0; i < b.N; i++ {
 		for _, line := range realWorldMacAddr {
+			if ptrn.Index(line) < 0 {
+				b.Fatal("didn't locate existing pattern in a line")
+			}
+		}
+	}
+}
+
+func BenchmarkPattern_LotsOfFalsePositivesOnMacAddrLookup(b *testing.B) {
+	ptrn, _ := pattern.NewPattern(`..:..:..:..:..:..`)
+	for i := 0; i < b.N; i++ {
+		for _, line := range falsePositivesMacAddrs {
+			if ptrn.Lookup(line) == nil {
+				b.Fatal("didn't locate existing pattern in a line")
+			}
+		}
+	}
+}
+
+func BenchmarkRegexp_LotsOfFalsePositivesOnMacAddrLookup(b *testing.B) {
+	ptrn := regexp.MustCompile(`..:..:..:..:..:..`)
+	for i := 0; i < b.N; i++ {
+		for _, line := range falsePositivesMacAddrs {
+			if ptrn.Find(line) == nil {
+				b.Fatal("didn't locate existing pattern in a line")
+			}
+		}
+	}
+}
+
+func BenchmarkRagel_LotsOfFalsePositivesOnMacAddrLookup(b *testing.B) {
+	var ptrn ragel.Stuff
+	for i := 0; i < b.N; i++ {
+		for _, line := range falsePositivesMacAddrs {
 			if ptrn.Index(line) < 0 {
 				b.Fatal("didn't locate existing pattern in a line")
 			}
